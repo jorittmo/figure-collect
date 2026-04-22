@@ -1,0 +1,72 @@
+---
+title: "Figure-collect Example"
+format: 
+   docx
+filters:
+  - at: post-quarto
+    path: figure-collect
+figure-collect:
+  figure-dir: figures_copy
+  figure-caption-section: figure-caption-section
+  copy-figures: true
+  keep-figures: false
+  figure-kinds: [fig, suppfig]
+  clean-figure-dir: true
+crossref:
+  custom:
+    - kind: float
+      key: suppfig
+      latex-env: suppfig
+      reference-prefix: Figure S
+      space-before-numbering: false
+      latex-list-of-description: Supplementary Figure
+---
+
+## Heading
+
+This filter adds formatting to heading text. And here we reference @fig-fig1.
+
+::: {#fig-fig1}
+
+![](example_figs/elephant.png)
+
+This is an elephant.
+
+:::
+
+
+## Heading 2
+
+Here we reference @fig-fig2.
+
+::: {#fig-fig2}
+
+![](example_figs/reimg_millet.png)
+
+Millet was a painter and now AI paints faster.
+
+:::
+
+## Supplementary
+
+Here we have a supplementary figure @suppfig-fig1.
+
+::: {#suppfig-fig1}
+
+![](example_figs/supp1.jpg)
+
+Millet was a painter and now AI paints faster.
+
+:::
+
+## This is where we move the main captions
+
+::: {.figure-caption-section}
+
+:::
+
+## This is where we move the supplementary captions
+
+::: {.figure-caption-section-suppfig}
+
+:::
