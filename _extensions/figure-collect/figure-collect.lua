@@ -284,8 +284,28 @@ end
 
 local function prefixed_caption(label, blocks)
   local result = pandoc.Blocks({})
-  local text = caption_text(blocks)
-  result:insert(pandoc.Para({ pandoc.Str(label .. ": " .. text) }))
+  local prefix = { pandoc.Str(label .. ":"), pandoc.Space() }
+  local prefixed = false
+
+  for _, block in ipairs(blocks) do
+    if not prefixed and (block.t == "Para" or block.t == "Plain") then
+      local content = pandoc.Inlines(prefix)
+      content:extend(block.content)
+      if block.t == "Para" then
+        result:insert(pandoc.Para(content))
+      else
+        result:insert(pandoc.Plain(content))
+      end
+      prefixed = true
+    else
+      result:insert(block)
+    end
+  end
+
+  if not prefixed then
+    result:insert(pandoc.Para(prefix))
+  end
+
   return result
 end
 

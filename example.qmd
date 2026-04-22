@@ -37,13 +37,13 @@ This is an elephant.
 
 ## Heading 2
 
-Here we reference @fig-fig2.
+Here we reference @fig-fig2. 
 
 ::: {#fig-fig2}
 
 ![](example_figs/reimg_millet.png)
 
-Millet was a painter and now AI paints faster.
+Millet was a painter and now AI paints faster. And here we reference @fig-fig1.
 
 :::
 
