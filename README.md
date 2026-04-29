@@ -50,6 +50,8 @@ figure-collect:
   keep-figures: true
   clean-figure-dir: false
   figure-kinds: [fig, suppfig]
+  source-data-dir: figure_sources
+  copy-source-data: true
 ```
 
 Custom float prefixes are read from `crossref.custom`. For example, an item with
@@ -68,6 +70,13 @@ removes files directly inside those folders, and leaves subdirectories alone.
 
 Use `figure-kinds` to limit which figure kinds are collected. For example,
 `figure-kinds: [suppfig]` copies and collects only supplementary figures.
+
+Set `source-data-dir` and `copy-source-data: true` to copy matching source-data
+files alongside copied figures. Matching is based on the original figure stem:
+for `age_path.pdf`, files named `age_path.csv` and `age_path_*.csv` in
+`source-data-dir` will be copied and renamed as `Figure 1.csv`,
+`Figure 1_suffix.csv`, etc. Custom kinds use their own suffixed figure folders
+the same way as the figure files themselves.
 
 Current limitation: exact engine-specific numbering beyond simple document-order
 labels will need post-render processing.

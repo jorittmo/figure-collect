@@ -5,6 +5,8 @@ local config = {
   keep_figures = true,
   clean_figure_dir = true,
   figure_kinds = nil,
+  source_data_dir = nil,
+  copy_source_data = false,
 }
 
 local categories = {
@@ -21,6 +23,7 @@ local categories_by_name = {
 local counters = {}
 local figures = pandoc.List({})
 local cleaned_figure_dirs = {}
+local copy_file
 
 local function meta_string(value)
   if value == nil then
@@ -92,6 +95,8 @@ local function read_config(meta)
   config.keep_figures = meta_bool(fc["keep-figures"], config.keep_figures)
   config.clean_figure_dir = meta_bool(fc["clean-figure-dir"], config.clean_figure_dir)
   config.figure_kinds = meta_string_list(fc["figure-kinds"]) or config.figure_kinds
+  config.source_data_dir = meta_string(fc["source-data-dir"]) or config.source_data_dir
+  config.copy_source_data = meta_bool(fc["copy-source-data"], config.copy_source_data)
 
   local crossref = meta.crossref or {}
   categories.fig.prefix =
@@ -240,6 +245,12 @@ local function extension_for(path)
   return ext
 end
 
+local function stem_for_path(path)
+  local filename = pandoc.path.filename(path)
+  local stem, _ = pandoc.path.split_extension(filename)
+  return stem
+end
+
 local function safe_filename(label, ext)
   local name = label:gsub("[/\\:*?\"<>|]", "-")
   name = name:gsub("%s+", " ")
@@ -258,7 +269,30 @@ local function clean_figure_dir_once(dir)
   end
 end
 
-local function copy_file(src, dest)
+local function copy_matching_source_data(src, label, kind)
+  if not config.copy_source_data or config.source_data_dir == nil then
+    return
+  end
+
+  local figure_stem = stem_for_path(src)
+  local data_dir = config.source_data_dir
+  local target_dir = figure_dir_for_kind(kind)
+
+  pandoc.system.make_directory(data_dir, true)
+  clean_figure_dir_once(target_dir)
+
+  for _, file in ipairs(pandoc.system.list_directory(data_dir)) do
+    local source_path = pandoc.path.join({ data_dir, file })
+    local source_stem, source_ext = pandoc.path.split_extension(file)
+    if source_stem == figure_stem or source_stem:match("^" .. figure_stem:gsub("([^%w])", "%%%1") .. "_") then
+      local suffix = source_stem:sub(#figure_stem + 1)
+      local renamed = safe_filename(label .. suffix, source_ext)
+      copy_file(source_path, pandoc.path.join({ target_dir, renamed }))
+    end
+  end
+end
+
+copy_file = function(src, dest)
   clean_figure_dir_once(pandoc.path.directory(dest))
 
   pandoc.system.make_directory(pandoc.path.directory(dest), true)
@@ -334,6 +368,7 @@ local function collect_figure(div)
   if config.copy_figures then
     copy_file(src, dest)
   end
+  copy_matching_source_data(src, label, kind)
 
   figures:insert({
     id = div.identifier,
@@ -386,6 +421,7 @@ local function collect_float(float)
   if config.copy_figures then
     copy_file(src, dest)
   end
+  copy_matching_source_data(src, label, kind)
 
   figures:insert({
     id = float.identifier,
